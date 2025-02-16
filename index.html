@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Gate Calculator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background-color: #0D0D0D;
+            color: #E0E0E0;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #4A00E0, #8E2DE2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 20px;
+            text-shadow: 0px 0px 10px #4A00E0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 25px;
+            background: rgba(15, 15, 35, 0.9);
+            box-shadow: 0px 0px 15px #4A00E0;
+            border-radius: 10px;
+        }
+
+        label {
+            font-size: 18px;
+            display: block;
+            margin: 15px 0 5px;
+            color: #8E2DE2;
+        }
+
+        select, input[type="text"], button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            background: #1F1F3F;
+            color: #E0E0E0;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        select:hover, input[type="text"]:focus {
+            box-shadow: 0px 0px 10px #8E2DE2;
+        }
+
+        button {
+            background: linear-gradient(90deg, #4A00E0, #8E2DE2);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            box-shadow: 0px 0px 15px #8E2DE2;
+        }
+
+        .output {
+            background: rgba(74, 0, 224, 0.3);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 20px;
+            margin-top: 20px;
+            text-shadow: 0px 0px 8px #8E2DE2;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            button, select, input[type="text"] {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Solo Gate Calculator</h1>
+
+<div class="container">
+    <label for="gate-select">Select Gate Type:</label>
+    <select id="gate-select">
+        <option value="1200">E-Rank Gate - 1,200 EXP</option>
+        <option value="4600">C-Rank Gate - 4,600 EXP</option>
+        <option value="17600">B-Rank Gate - 17,600 EXP</option>
+        <option value="36000">A-Rank Gate - 36,000 EXP</option>
+        <option value="66600">Red Gate - 66,600 EXP</option>
+        <option value="83800">Red Gate1⭐ - 83,800 EXP</option>
+        <option value="151000">Red Gate2⭐ - 151,000 EXP</option>
+        <option value="289700">Red Gate3⭐ - 289,700 EXP</option>
+    </select>
+
+    <label for="level">Current Level:</label>
+    <input type="text" id="level" placeholder="Enter your current level (e.g. 125 or 125K)">
+
+    <label for="goal-level">Goal Level:</label>
+    <input type="text" id="goal-level" placeholder="Enter your goal level (e.g. 128 or 1.2M)">
+
+    <label for="exp-requirement">Current EXP Requirement:</label>
+    <input type="text" id="exp-requirement" placeholder="Enter current EXP requirement (e.g. 2850 or 2.8K)">
+
+    <label for="double-exp">
+        <input type="checkbox" id="double-exp"> Double EXP
+    </label>
+
+    <button onclick="calculateEXP()">Calculate Gates Needed</button>
+
+    <div class="output" id="result">
+        <p id="result-text">Gates Needed: </p>
+    </div>
+</div>
+
+<script>
+    function parseInput(value) {
+        let num = 0;
+        if (value.includes("K")) {
+            num = parseFloat(value.replace("K", "")) * 1000;
+        } else if (value.includes("M")) {
+            num = parseFloat(value.replace("M", "")) * 1000000;
+        } else {
+            num = parseFloat(value);
+        }
+        return num;
+    }
+
+    function calculateEXP() {
+        const currentLevel = parseInput(document.getElementById('level').value);
+        const goalLevel = parseInput(document.getElementById('goal-level').value);
+        const currentExp = parseInput(document.getElementById('exp-requirement').value);
+        const expPerGate = parseInt(document.getElementById('gate-select').value);
+        const isDoubleExp = document.getElementById('double-exp').checked;
+        const expMultiplier = isDoubleExp ? 2 : 1;
+
+        let totalExpRequired = 0;
+        let expGained = currentExp;
+        let gatesNeeded = 0;
+
+        // Determine the experience increment based on gate type
+        let experienceIncrement = 50; // Default for E, C, B, A
+        const selectedGate = document.getElementById('gate-select').value;
+
+        if (selectedGate === "66600" || selectedGate === "83800" || selectedGate === "151000" || selectedGate === "289700") {
+            // Red Gate and above
+            experienceIncrement = 700;
+        }
+
+        // Calculate the total experience required to reach the goal level based on increasing requirements
+        let expRequirement = currentExp;
+
+        for (let level = currentLevel; level < goalLevel; level++) {
+            totalExpRequired += expRequirement;
+            expRequirement += experienceIncrement;  // Increase by 50 or 700 depending on the gate
+        }
+
+        // Now, calculate how many gates are needed based on fixed experience per gate
+        while (expGained < totalExpRequired) {
+            gatesNeeded++;
+            expGained += expPerGate * expMultiplier; // Fixed experience per gate
+        }
+
+        // Round the result to the nearest higher integer
+        gatesNeeded = Math.ceil(gatesNeeded);
+
+        document.getElementById('result-text').textContent = `Gates Needed: ${gatesNeeded}`;
+    }
+</script>
+
+</body>
+</html>
